@@ -1,5 +1,17 @@
 # Change log
 
+## 2026-11-01 — Integrate data logging into main
+
+- Fast-forward `main` to include the data-logging workflow documented below.
+  Firmware sources, headers, and PlatformIO configuration retain their original
+  versions; the experimental sampling changes and I2C scanner are not included.
+- Configure the local checkout to use the personal fork as `origin` and Luke's
+  repository as `upstream`, so normal pushes target the fork.
+- Verification: all seven `make test` tests passed; `git diff --check` passed;
+  no files under `data/` or `.vscode/` are tracked. Local recordings were preserved.
+- Sensor communication and physiological accuracy still require hardware
+  validation; this integration introduces no sensor-estimation fix.
+
 ## 2026-11-01 — Data logging
 
 ### Changes and purpose
