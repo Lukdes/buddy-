@@ -1,0 +1,9 @@
+[project]
+name = "buddy-minus-tools"
+version = "0.1.0"
+description = "Optional laptop serial viewer and text recorder for Buddy Minus"
+requires-python = ">=3.10"
+dependencies = ["pyserial==3.5"]
+
+[tool.uv]
+package = false
