@@ -1,5 +1,22 @@
 # Change log
 
+## 2026-11-01 — Correct sender sample pairing
+
+- Read red and infrared from the same queued FIFO sample before advancing,
+  avoiding separate fresh-data waits that could skip samples and distort the
+  timing assumed by the BPM algorithm.
+- Add a sender USB diagnostic reporting processed sample pairs per second and
+  the measured interval, with an expected rate of 25 pairs per second.
+- Document how to upload to the sensor-connected sender and capture the
+  diagnostic. Receiver firmware, packet format, and sensor settings are unchanged.
+- Verification: the updated sender built successfully with PlatformIO; the build
+  reported a library/framework `I2C_BUFFER_LENGTH` redefinition warning. User-run
+  hardware testing confirmed the diagnostic appeared and reported approximately
+  the expected sampling rate. `git diff --check` passed.
+- Repeated accuracy validation remains pending. The throughput diagnostic does
+  not establish signal quality, lossless sampling, or SpO2 accuracy. Personal
+  recordings and detailed troubleshooting notes remain local under ignored data/.
+
 ## 2026-11-01 — Integrate data logging into main
 
 - Fast-forward `main` to include the data-logging workflow documented below.

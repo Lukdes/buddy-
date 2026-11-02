@@ -6,6 +6,7 @@
 MAX30105 sensor;
 const uint8_t destination[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 uint32_t lastSend = 0, sequence = 0;
+uint32_t samplePairsSinceReport = 0;
 uint32_t irBuffer[100], redBuffer[100];
 uint16_t sampleCount = 0;
 uint32_t latestIr = 0, lastSample = 0;
@@ -42,15 +43,18 @@ void setup() {
     while (true) delay(1000);
   }
   sensor.setup(60, 4, 2, 100, 411, 4096); // 25 averaged samples/sec for SpO2 algorithm.
+  lastSend = millis();
   Serial.println("Sender ready. Place a fingertip gently over the sensor.");
 }
 
 void loop() {
   sensor.check();
   while (sensor.available()) {
-    uint32_t red = sensor.getRed();
-    latestIr = sensor.getIR();
+    // Read both channels from the same queued sample before advancing.
+    uint32_t red = sensor.getFIFORed();
+    latestIr = sensor.getFIFOIR();
     sensor.nextSample();
+    ++samplePairsSinceReport; // Include pairs acquired without finger contact.
     lastSample = millis();
     finger = latestIr >= 50000; // Contact threshold; may need tuning.
     if (!finger) {
@@ -77,6 +81,10 @@ void loop() {
     resetReadings();
   }
   if (now - lastSend >= 1000) {
+    uint32_t reportElapsed = now - lastSend;
+    uint32_t reportPairs = samplePairsSinceReport;
+    float samplePairsPerSecond = reportPairs * 1000.0f / reportElapsed;
+    samplePairsSinceReport = 0;
     lastSend = now;
     HeartPacket packet = {};
     packet.magic = packetMagic;
@@ -95,6 +103,9 @@ void loop() {
     else Serial.print("BPM calculating/unavailable | ");
     if (oxygenValid) Serial.printf("Estimated SpO2=%ld%% | ", (long)oxygen);
     else Serial.print("SpO2 calculating/unavailable | ");
+    Serial.printf("Sample pairs/s=%.1f (expected 25; %lu pairs/%lu ms) | ",
+        samplePairsPerSecond, (unsigned long)reportPairs,
+        (unsigned long)reportElapsed);
     Serial.println(result == ESP_OK ? "queued" : "send error");
   }
   delay(1);

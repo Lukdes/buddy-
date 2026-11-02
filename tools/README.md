@@ -2,7 +2,7 @@
 
 This laptop app listens to the output already printed by Buddy's firmware. It
 does not upload firmware, call the C++ programs, change sensor settings, or parse
-and smooth readings. `heartrate.cpp`, `sender.cpp` and `receiver.cpp` are untouched.
+and smooth readings. Firmware is built and uploaded separately from this app.
 
 Close the PlatformIO Serial Monitor first with Ctrl+C. Only one application can
 own a serial port at a time. Run these commands from the Buddy Minus folder.
@@ -92,6 +92,35 @@ the app connects, so earlier terminal output is not included.
 All recordings are in the ignored `data/` folder. Keep a separate backup. In
 view-only mode no recording folder or files are created. You may use PlatformIO's
 ordinary monitor instead whenever recording is unnecessary.
+
+## Sender sampling check
+
+The sender reads matched red/IR samples from the FIFO and reports its processed
+sample-pair rate in USB output, for example:
+
+```text
+Sample pairs/s=25.0 (expected 25; 25 pairs/1000 ms)
+```
+
+The rate includes pairs collected without finger contact. It measures processing
+throughput over the reporting interval, not signal quality or individual sample
+timing, and does not prove that no samples were lost. Small interval fluctuations
+can occur; a persistently incorrect rate needs investigation because the BPM
+algorithm assumes 25 sample pairs per second.
+
+To upload this change, connect USB to the board physically wired to the sensor
+and use `pio run -e sender -t upload`. Select its actual port with
+`--upload-port <port>` if needed. Leave the separate receiver running receiver
+firmware. After upload, record from the sender's USB port:
+
+```sh
+make record NAME=sampling_check SOURCE=sender DURATION=60
+```
+
+Use `PORT=<sender-port>` when multiple USB devices are connected. `SOURCE` only
+labels the capture. The sample-rate diagnostic is not transmitted to the receiver;
+it requires the sender's USB connection. Compare resting BPM with the reference
+device during the capture. Physiological accuracy still requires validation.
 
 The Python bundled with PlatformIO already includes pyserial. The uv environment
 gets pyserial from `pyproject.toml`. Run the transport/persistence tests with
