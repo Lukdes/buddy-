@@ -34,6 +34,39 @@ uv run python tools/record.py
 uv run python tools/record.py --record contact_test_001 --source sender
 ```
 
+## Firmware upload shortcuts
+
+Close the serial monitor or recorder before uploading. Connect the intended
+board by USB, then run `make ports` to identify its port. With similar boards,
+connect one at a time to establish which port belongs to which board.
+
+```sh
+make upload-sender PORT=/dev/cu.YOUR_SENDER_PORT
+make upload-receiver PORT=/dev/cu.YOUR_RECEIVER_PORT
+```
+
+Replace the example ports with the actual ports from `make ports`. Each command
+builds the selected firmware and uploads it in one step. The sender is the board
+physically wired to the sensor; the receiver is the separate board receiving
+wireless packets. Uploading to the battery-powered sender requires connecting
+its USB cable temporarily. These commands cannot update it through the receiver.
+
+Uploads require an explicit `PORT`. This prevents automatic port selection but
+cannot verify the board's physical role: selecting the wrong port still uploads
+the wrong firmware. `SOURCE` is only a recording label and does not affect uploads.
+Viewing and recording remain separate commands and never trigger an upload.
+
+The Makefile uses PlatformIO's usual `~/.platformio/penv/bin/pio` installation
+when present, otherwise `pio` from PATH. Override the executable if needed:
+
+```sh
+make upload-sender PORT=/dev/cu.YOUR_SENDER_PORT PIO=/path/to/pio
+```
+
+After a successful upload, run `make view PORT=...` or `make record PORT=...`
+using that board's port. No source edits or GitHub download are performed by
+these commands; they upload the firmware built from the current local checkout.
+
 ## Direct commands using PlatformIO's Python
 
 List devices:
@@ -109,9 +142,8 @@ can occur; a persistently incorrect rate needs investigation because the BPM
 algorithm assumes 25 sample pairs per second.
 
 To upload this change, connect USB to the board physically wired to the sensor
-and use `pio run -e sender -t upload`. Select its actual port with
-`--upload-port <port>` if needed. Leave the separate receiver running receiver
-firmware. After upload, record from the sender's USB port:
+and use `make upload-sender PORT=<sender-port>`. Leave the separate receiver
+running receiver firmware. After upload, record from the sender's USB port:
 
 ```sh
 make record NAME=sampling_check SOURCE=sender DURATION=60

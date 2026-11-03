@@ -3,6 +3,7 @@
 These instructions apply throughout this repository. Read this file before
 working, then inspect `git status` and the relevant source/configuration. Preserve
 existing user changes. Explicit user instructions take precedence over this file.
+Read `OPERATIONS.md` for the current handoff and `CHANGELOG.md` for change history.
 
 ## Purpose and current scope
 
@@ -45,6 +46,9 @@ Do not flash hardware or interrupt an active recording without user authorizatio
   plausible values, smooth the original capture, or claim unverified fixes.
 - Update `tools/README.md` when commands, output formats, or setup steps change.
   Update this file when an agreed project rule or workflow changes.
+- Update `OPERATIONS.md` when handing off an operational change, including what
+  was verified and what still needs hardware testing. Keep personal experiment
+  details in ignored local data rather than the tracked handoff.
 - Keep experimental notes with local recordings. This file records durable rules,
   not a running diary of individual experiments.
 - Report what changed, what was checked, and what still needs hardware validation.
@@ -113,6 +117,10 @@ commands in `tools/README.md` (for setup: `uv sync --locked`).
 PlatformIO is needed for firmware builds/uploads, not for the uv recording app.
 After an approved firmware change, build the affected environment with
 `pio run -e <environment>`. Building is separate from uploading.
+For an authorized upload, use `make upload-sender PORT=<sender-port>` or
+`make upload-receiver PORT=<receiver-port>`. Identify the physically correct board
+before selecting its port; the target selects firmware but does not detect board
+role. Close active monitors first. `PIO=/path/to/pio` overrides the executable.
 
 ## Verification
 

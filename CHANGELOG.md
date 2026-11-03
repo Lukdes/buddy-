@@ -1,5 +1,23 @@
 # Change log
 
+## 2026-11-03 — Explicit firmware upload shortcuts and agent handoff
+
+- Add `make upload-sender PORT=...` and `make upload-receiver PORT=...` to build
+  and upload the selected firmware. Require an explicit port to avoid automatic
+  selection of the other board, with a configurable PlatformIO executable.
+- Document how to identify the sender and receiver, close monitors, upload, and
+  resume viewing/recording. The commands cannot verify physical board role.
+- Add `OPERATIONS.md` with the current baseline, operational workflow, verification
+  limits, and repository context. Link it from the agent instructions and record
+  the new upload procedure there.
+- Validation: simulated uploader checks passed for both targets, missing-port
+  rejection, quoted paths/arguments, and failure propagation. All seven recording
+  tests passed; help output and Git whitespace checks passed. No hardware was
+  flashed by these checks; firmware sources and the packet format are unchanged.
+- Recordings and the detailed local troubleshooting knowledge base remain ignored
+  and excluded from this push. Hardware use of the new shortcuts and repeated
+  physiological accuracy checks remain pending.
+
 ## 2026-11-01 — Correct sender sample pairing
 
 - Read red and infrared from the same queued FIFO sample before advancing,
