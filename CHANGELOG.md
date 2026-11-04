@@ -1,5 +1,25 @@
 # Change log
 
+## 2026-11-04 — Sensor-driven vibration alerts
+
+- Add a separate vibration controller to the sender with a configurable default
+  threshold of strictly below 97% and one nonblocking five-second pulse. Valid
+  recovery re-arms the policy; invalid, stale, or lost-contact input stops it.
+- Expose a threshold setter for future integration and print motor state on sender
+  USB output. Preserve sensor settings, estimation, and the wireless packet format.
+- Add standalone synthetic motor-test firmware and host policy tests. Clarify
+  Make help and the two-board upload/view workflow, including receiver recovery.
+- Verification for this push: sender, receiver, and vibration_test builds passed;
+  host policy tests passed with a compatible SDK selected. Tests cover threshold
+  boundaries, pulse duration, recovery, invalid input, and timer rollover.
+- Earlier bench testing confirmed physical motor activation and stop; receiver
+  recovery confirmed wireless packet reception. No hardware was flashed for this
+  push. The separated controller still needs hardware verification; physiological
+  accuracy and vibration interference remain unvalidated.
+- External-data exploratory analysis remains local under ignored data/. It does
+  not change the deployed algorithm. Recordings, datasets, and analysis outputs
+  are excluded; Git ignore and whitespace checks passed.
+
 ## 2026-11-03 — Explicit firmware upload shortcuts and agent handoff
 
 - Add `make upload-sender PORT=...` and `make upload-receiver PORT=...` to build

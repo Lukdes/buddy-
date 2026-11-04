@@ -2,6 +2,9 @@
 #include <Wire.h>
 #include <MAX30105.h>
 #include <spo2_algorithm.h>
+#include "Vibration.h"
+
+uint32_t lastEstimate = 0;
 
 MAX30105 sensor;
 const uint8_t destination[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -18,13 +21,13 @@ void resetReadings() {
   sampleCount = 0;
   oxygenValid = heartValid = 0;
   oxygen = heartRate = 0;
+  vibration::update(millis(), 0, false, 0);
 }
 
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  pinMode(27, OUTPUT);
-  digitalWrite(27, LOW);
+  vibration::begin();
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
   startRadio();
@@ -69,6 +72,7 @@ void loop() {
           &oxygen, &oxygenValid, &heartRate, &heartValid);
       oxygenValid = oxygenValid && oxygen > 0 && oxygen <= 100;
       heartValid = heartValid && heartRate >= 30 && heartRate <= 220;
+      lastEstimate = millis();
       // Retain 3 seconds; collect 1 second before the next calculation.
       memmove(irBuffer, irBuffer + 25, 75 * sizeof(uint32_t));
       memmove(redBuffer, redBuffer + 25, 75 * sizeof(uint32_t));
@@ -80,6 +84,7 @@ void loop() {
     finger = false;
     resetReadings();
   }
+  vibration::update(now, oxygen, finger && oxygenValid, lastEstimate);
   if (now - lastSend >= 1000) {
     uint32_t reportElapsed = now - lastSend;
     uint32_t reportPairs = samplePairsSinceReport;
@@ -103,6 +108,8 @@ void loop() {
     else Serial.print("BPM calculating/unavailable | ");
     if (oxygenValid) Serial.printf("Estimated SpO2=%ld%% | ", (long)oxygen);
     else Serial.print("SpO2 calculating/unavailable | ");
+    Serial.printf("Vibration=%s | Alert below=%.1f%% | ",
+        vibration::isActive() ? "ON" : "OFF", vibration::threshold());
     Serial.printf("Sample pairs/s=%.1f (expected 25; %lu pairs/%lu ms) | ",
         samplePairsPerSecond, (unsigned long)reportPairs,
         (unsigned long)reportElapsed);
