@@ -6,7 +6,7 @@ namespace {
 constexpr uint8_t vibrationPin = 27;
 constexpr bool vibrationActiveHigh = true;
 constexpr float initialSpO2Threshold = 97.0f;
-constexpr uint32_t estimateFreshMs = 2000;
+constexpr uint32_t packetFreshMs = 2000;
 SpO2Alert oxygenAlert;
 bool motorOn = false;
 
@@ -24,8 +24,8 @@ void begin() {
   oxygenAlert.setThreshold(initialSpO2Threshold);
 }
 
-void update(uint32_t now, float spo2, bool valid, uint32_t estimatedAt) {
-  bool fresh = valid && uint32_t(now - estimatedAt) <= estimateFreshMs;
+void update(uint32_t now, float spo2, bool valid, uint32_t receivedAt) {
+  bool fresh = valid && uint32_t(now - receivedAt) <= packetFreshMs;
   bool on = oxygenAlert.update(now, fresh, spo2);
   if (on != motorOn) {
     driveMotor(on);

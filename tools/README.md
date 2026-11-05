@@ -67,15 +67,15 @@ After a successful upload, run `make view PORT=...` or `make record PORT=...`
 using that board's port. No source edits or GitHub download are performed by
 these commands; they upload the firmware built from the current local checkout.
 
-For the normal two-board arrangement, keep sender firmware on the sensor/motor
-board and receiver firmware on the separate USB-connected board. Run
-`make view PORT=<receiver-port>` or `make record SOURCE=receiver PORT=<receiver-port>`
-to read wireless measurements through the receiver. The motor is controlled
-locally by the sender even when its USB cable is disconnected; it still needs
-power. Do not upload sender firmware to the receiver to enable vibration. A
-`Sensor not detected` message from the receiver indicates the wrong firmware is
-running there. The receiver does not display the motor state in the current
-packet format, so absence of a vibration field does not mean it is disabled.
+For the two-board arrangement, the sensor stays on the sender and the vibration
+module moves to the observer's receiver. With power disconnected, connect module
+IN to receiver GPIO27, VCC to receiver 3V (as in the previously tested setup), and
+GND to receiver GND. Confirm the module supports that supply; do not power a bare
+motor from GPIO. Remove the motor connection from the sender.
+Upload both updated firmwares to their respective boards: `make upload-sender
+PORT=<sender-port>` removes sender alerts; `make upload-receiver
+PORT=<receiver-port>` enables receiver alerts. Then view/record the receiver.
+No physical rewiring or upload is performed by editing/building this project.
 
 ## Direct commands using PlatformIO's Python
 
@@ -136,22 +136,24 @@ All recordings are in the ignored `data/` folder. Keep a separate backup. In
 view-only mode no recording folder or files are created. You may use PlatformIO's
 ordinary monitor instead whenever recording is unnecessary.
 
-## Five-second vibration alert (sender only)
+## Five-second vibration alert (receiver only)
 
-The sender now uses a nonblocking five-second pulse for a fresh, valid SpO2
+The receiver uses a nonblocking five-second pulse for a fresh, valid SpO2
 estimate **strictly below 97%**. Exactly 97% does not trigger it. A continuous low
 reading produces only one pulse, not repeated vibration. After the pulse ends,
 a valid reading at or above the threshold re-arms the alert for another low
 episode. Recovery during a pulse does not shorten the five seconds. Invalid,
-stale (no new estimate for more than two seconds), or lost-contact data stops
+stale (no accepted packet for more than two seconds), or lost-contact data stops
 the pulse early and does not re-arm it. These conditions are not interpreted as
 zero oxygen or as recovery. A restart resets the alert state.
 
-`src/vibration.cpp` receives the sender's live SpO2 estimate, validity, and
-calculation timestamp through `vibration::update(...)` on every loop. It runs
-inside the sender firmware, not as a separate terminal program or firmware
-environment. It consumes real sensor estimates; no synthetic values are injected
-into this path. Upload with `make upload-sender PORT=<sender-port>`.
+`src/vibration.cpp` receives the latest wireless SpO2, validity/contact state,
+and callback arrival timestamp from the receiver loop. It runs inside receiver
+firmware and continues timing even when packets stop. Packet age is not sensor
+acquisition age: the existing packet has no acquisition timestamp. The five-second
+connection-loss serial warning remains; no separate loss-of-link vibration pattern
+is implemented. Loss of packets cancels the oxygen pulse after two seconds.
+Upload with `make upload-receiver PORT=<receiver-port>`.
 
 In `src/vibration.cpp`, `initialSpO2Threshold` controls the default threshold,
 `vibrationPin` is set to GPIO 27, and `vibrationActiveHigh` is set to true. These
@@ -162,16 +164,15 @@ Recheck wiring when changing hardware. No motor power should come directly from
 a GPIO.
 
 For later on-device algorithm integration, call
-`vibration::setThreshold(percent)` from the sender loop context (include
+`vibration::setThreshold(percent)` from the receiver loop context (include
 `Vibration.h`). It rejects
 nonfinite values and values outside (0, 100], leaving the previous setting intact.
 It changes the trigger/recovery threshold without forcing a new pulse or clearing
 the consumed-alert state. A host-to-device command protocol is not implemented.
 The reusable policy lives in `include/SpO2Alert.h`; pulse duration is `pulseMs`.
 
-Sender USB output records the motor state and threshold. The wireless packet and
-receiver are unchanged, so this extra diagnostic is not visible on the receiver.
-The alert does not modify the underlying SpO2 estimate or its validity flag.
+Receiver USB output records the motor state and threshold. The wireless packet
+format and underlying sensor estimation are unchanged. Sender GPIO27 stays LOW.
 
 Run `make test-alert` with a host C++ compiler installed to test synthetic readings
 and timing without touching hardware. If macOS reports an SDK/linker architecture
@@ -183,19 +184,19 @@ millisecond timer rollover. Do not induce desaturation to test an alert. Physica
 motor ON/OFF operation passed; precise physical timing, startup behavior under
 different power conditions, and vibration interference with optical sensing need
 further verification. This is an experimental alert, not a validated
-safety alarm. Upload only the sender using the explicit port workflow above.
+safety alarm. Upload the receiver using the explicit port workflow above.
 
 For a standalone motor bench test, the `vibration_test` environment uses labelled
 synthetic 96% input, waits ten seconds after boot, and requests one five-second
 pulse on GPIO 27. It reads no sensor and sends no radio packets. Each reset
 (including one caused by opening a monitor) starts a new test. It replaces the
-sender firmware until the normal sender is uploaded again:
+receiver firmware until normal receiver firmware is uploaded again:
 
 ```sh
-pio run -e vibration_test -t upload --upload-port <sender-port>
-make view PORT=<sender-port>
-# After the test, stop the monitor and restore sensor-driven operation:
-make upload-sender PORT=<sender-port>
+pio run -e vibration_test -t upload --upload-port <receiver-port>
+make view PORT=<receiver-port>
+# After the test, stop the monitor and restore wireless receiver operation:
+make upload-receiver PORT=<receiver-port>
 ```
 
 ## Sender sampling check

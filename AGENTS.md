@@ -25,7 +25,9 @@ inducing dangerous desaturation or blackout.
   environments. Each has its own entry point; they are not called together by the
   laptop recorder.
 - `src/sender.cpp` reads the optical sensor, estimates BPM/SpO2, and sends ESP-NOW
-  packets. `src/receiver.cpp` receives packets and prints their readings.
+  packets. `src/receiver.cpp` receives packets, prints readings, and calls
+  `src/vibration.cpp` to alert the observer. Motor control belongs only on the
+  receiver; the sender acquires and transmits measurements.
   `src/heartrate.cpp` is an alternative standalone BPM firmware.
 - `include/Link.h` defines the shared packet contract. Keep sender and receiver
   compatible when an approved change affects that contract.

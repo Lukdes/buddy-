@@ -1,5 +1,24 @@
 # Change log
 
+## 2026-11-04 — Receiver-only observer vibration
+
+- Move the vibration controller from sender to receiver so the observer receives
+  the alert. Sender GPIO27 stays low; sensor acquisition and packet layout remain
+  unchanged. Receiver output now includes motor state and threshold.
+- Timestamp accepted packets in the receive callback and service pulse timing
+  between packets. Stop output after more than two seconds without a fresh packet;
+  retain the five-second serial connection-loss warning. No separate link-loss
+  vibration pattern is implemented. Arrival age is not sensor acquisition age.
+- Preserve the below-97% trigger, bounded five-second pulse, invalid/contact-loss
+  cancellation, and recovery re-arming policy. Update Make help, wiring/upload
+  instructions, agent architecture notes, and operational handoff.
+- Verification: sender and receiver builds and host policy tests passed during
+  this change; Git whitespace and ignored-data checks passed. The existing
+  library I2C_BUFFER_LENGTH warning remains. No hardware was flashed; receiver
+  wiring, motor operation, and packet-loss behavior still need hardware testing.
+- Integrate with Luke's main, which already includes the earlier data-logging
+  and vibration work through PR #2. Recordings and external analysis stay ignored.
+
 ## 2026-11-04 — Sensor-driven vibration alerts
 
 - Add a separate vibration controller to the sender with a configurable default

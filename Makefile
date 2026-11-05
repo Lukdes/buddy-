@@ -22,10 +22,10 @@ help:
 	  'make test                         Run transport/file-integrity tests' \
 	  'make test-alert                   Simulate vibration logic without hardware' \
 	  'make setup                        Install the locked Python dependencies' \
-	  'make upload-sender PORT=...       Enable automatic vibration by uploading sender firmware' \
-	  'make upload-receiver PORT=...     Build and flash the separate receiver board' \
+	  'make upload-sender PORT=...       Build and flash the sensor-connected board' \
+	  'make upload-receiver PORT=...     Enable observer vibration by uploading receiver firmware' \
 	  '' \
-	  'Vibration: connect USB to the sensor-connected breadboard board, then upload-sender.' \
+	  'Vibration: wire the motor to the observer receiver GPIO27, then upload-receiver.' \
 	  'After a successful upload, valid SpO2 below the configured threshold (default 97%)' \
 	  'triggers one five-second pulse. Recovery re-arms it; invalid/stale data stops it early.' \
 	  'It runs on the board even when make view is closed. No separate enable command is needed.' \
@@ -57,7 +57,7 @@ test-alert:
 
 # Require a port instead of letting PlatformIO choose the other board silently.
 # The target selects firmware; PORT must identify the physically correct board.
-# upload-sender includes src/vibration.cpp: after successful upload the board
+# upload-receiver includes src/vibration.cpp: after successful upload the board
 # automatically drives the motor for valid low SpO2. view/record only read output.
 upload-sender upload-receiver:
 	@if [ -z "$$PORT" ]; then \

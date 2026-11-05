@@ -6,19 +6,16 @@ working; this document is a handoff snapshot, not a substitute for inspection.
 
 ## Current baseline
 
-- `src/vibration.cpp` now owns the real-time vibration controller, compiled into
-  the sender alongside `sender.cpp`. The sender passes live estimated SpO2,
-  validity/contact state, and the estimate timestamp each loop; the controller
-  checks freshness and drives the timed motor output. `include/Vibration.h`
-  exposes a threshold setter for future integration. This module refactor is
-  not yet uploaded; the board retains the previously tested sender build.
-- The sender now includes a configurable vibration policy: a fresh valid SpO2
-  below 97% triggers a single nonblocking five-second pulse. After it ends, valid
-  recovery to at least 97% re-arms it. Invalid/stale data or lost contact cancels
-  the output without re-arming. GPIO 27 active-high control passed a standalone
-  synthetic motor test: the user confirmed vibration and automatic stop. The
-  normal sensor-driven sender was restored afterward. See `tools/README.md` and
-  `make test-alert` for details.
+- Vibration control now runs only on the observer receiver. Move the module IN
+  to receiver GPIO27, VCC to the supported receiver supply, and GND to common
+  receiver ground while powered off. Upload both firmwares to remove the old
+  sender behavior and enable receiver alerts. Neither has been flashed for this change.
+- The unchanged policy triggers one five-second pulse for valid SpO2 below 97%,
+  with valid recovery needed to re-arm. Invalid/no-contact input cancels it.
+  Receiver packet age over two seconds cancels output; packet arrival time is not
+  sensor acquisition time. The five-second link-loss message remains serial-only.
+- Previous motor bench testing was on the sender setup. Receiver motor wiring,
+  live threshold transitions, and packet-loss behavior need hardware verification.
 - Acquisition and optional logging are the current focus; prediction is deferred.
 - The sender uses matched red/IR FIFO reads and prints its processed sample-pair
   rate on USB. Expected rate is approximately 25 pairs per second. The receiver
@@ -59,6 +56,9 @@ when present and falls back to PATH. View/record commands do not flash firmware.
 
 ## Verification and limitations
 
+- Receiver-only move: sender and receiver builds passed; host policy tests passed
+  with a compatible SDK. Existing library I2C_BUFFER_LENGTH warning remains.
+  No upload was performed; receiver-side motor and dropout tests remain pending.
 - Pre-push verification on 2026-11-04: sender, receiver, and vibration_test builds
   passed, as did host policy tests with a compatible SDK. No hardware was flashed.
 - External-data analysis is local under ignored `data/external/`; no prediction
@@ -89,6 +89,10 @@ when present and falls back to PATH. View/record commands do not flash firmware.
 
 At this handoff, `origin` points to `Lukdes/buddy-`, and `data-logging` tracks
 `origin/data-logging`. A separate `fork` remote points to the personal fork.
+The receiver-only change targets Luke's `main` by explicit user request; local
+`data-logging` remains the working branch. Main already merged the earlier work
+through PR #2. Updating main does not flash either board: move the motor to the
+receiver and upload both updated firmwares before hardware validation.
 Confirm `git remote -v` and `git status -sb` before any authorized push; do not
 assume the remote names from older change-log entries remain current.
 

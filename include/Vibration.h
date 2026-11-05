@@ -3,9 +3,9 @@
 
 namespace vibration {
 void begin();
-// Call every sender loop with its latest real sensor estimate and timestamp.
+// Call every receiver loop with the latest estimate and packet arrival timestamp.
 // valid must be false for missing contact or an invalid sensor calculation.
-void update(uint32_t now, float spo2, bool valid, uint32_t estimatedAt);
+void update(uint32_t now, float spo2, bool valid, uint32_t receivedAt);
 bool setThreshold(float percent); // Future algorithm integration; (0, 100].
 float threshold();
 bool isActive();
