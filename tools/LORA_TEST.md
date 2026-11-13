@@ -42,10 +42,16 @@ Use your installed PlatformIO executable if `pio` is not on PATH. Reset the
 board after opening the monitor to see startup output. `PASS` means the radio
 initialized over SPI; failure suggests checking wiring and power.
 
-The test listens by default. Type `t` to send one numbered packet at 5 dBm;
+The test listens by default. Type a word or sentence and press Enter to send it at 5 dBm.
+For example, `hello` + Enter appears as `RX 5 bytes: hello` on the other board.
+Both CR and LF line endings work. Blank lines are ignored. Messages over 255
+bytes are rejected in full; nothing is sent. Backspace edits the current line
+until overflow; after overflow, press Enter to discard and start again.
+`t` or `T` + Enter sends a numbered test packet;
 there is no automatic repeat. TX completion alone does not prove reception.
 For an over-the-air test, use a second ESP32/RFM96W running this sketch with
-its own matching wiring. Send from one board and look for `RX` plus the matching
+its own matching wiring. After updating this firmware, re-upload to each board that will send typed text.
+Send from one board and look for `RX` plus the matching
 packet number on the other, then test the reverse direction. Both use 433 MHz,
 SF7, 125 kHz bandwidth, coding rate 4/5, sync word 0x12 and CRC enabled.
 

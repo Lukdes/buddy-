@@ -10,6 +10,30 @@ constexpr int radioMiso = 19;
 constexpr int radioSck = 5;
 constexpr int radioDio0 = 12;
 uint32_t packetNumber = 0;
+uint8_t message[255];
+size_t messageLength = 0;
+bool messageOverflow = false;
+
+void sendMessage() {
+  if (messageOverflow) {
+    Serial.println("FAIL: message exceeds 255 bytes; nothing sent.");
+    return;
+  }
+  if (messageLength == 0) return;
+  if (!LoRa.beginPacket()) {
+    Serial.println("FAIL: could not start TX.");
+    return;
+  }
+  if (messageLength == 1 && (message[0] == 't' || message[0] == 'T')) {
+    LoRa.print("RFM96W test #");
+    LoRa.print(++packetNumber);
+  } else {
+    LoRa.write(message, messageLength);
+  }
+  Serial.println(LoRa.endPacket()
+      ? "TX complete (delivery unconfirmed)."
+      : "FAIL: TX did not complete.");
+}
 
 void setup() {
   Serial.begin(115200);
@@ -29,7 +53,8 @@ void setup() {
   LoRa.enableCrc();
   LoRa.setTxPower(5);
   Serial.println("PASS: radio initialized over SPI. This does not verify the RF link or G0 wire.");
-  Serial.println("Listening. Attach a 433 MHz antenna before typing t to transmit one packet.");
+  Serial.println("Listening. Attach a 433 MHz antenna before transmitting.");
+  Serial.println("Type a message and press Enter to send (255 bytes max). t + Enter sends a numbered test.");
   Serial.println("Use a second matching radio to verify reception; TX completion is not an acknowledgement.");
 }
 
@@ -42,19 +67,27 @@ void loop() {
   }
 
   if (Serial.available()) {
-    char command = Serial.read();
-    if (command == 't' || command == 'T') {
-      if (!LoRa.beginPacket()) {
-        Serial.println("FAIL: could not start TX.");
-        return;
+    int input = Serial.read();
+    if (input == '\r' || input == '\n') {
+      // CRLF is safe: the second terminator sees an empty buffer.
+      if (messageLength > 0 || messageOverflow) {
+        Serial.println();
+        sendMessage();
+        messageLength = 0;
+        messageOverflow = false;
       }
-      LoRa.print("RFM96W test #");
-      LoRa.print(++packetNumber);
-      if (LoRa.endPacket()) {
-        Serial.printf("TX complete: RFM96W test #%lu (delivery unconfirmed)\n",
-                      static_cast<unsigned long>(packetNumber));
+    } else if (input == 8 || input == 127) {
+      if (!messageOverflow && messageLength > 0) {
+        --messageLength;
+        Serial.print("\b \b");
+      }
+    } else if (input >= 32) {
+      if (messageLength < sizeof(message) && !messageOverflow) {
+        message[messageLength++] = static_cast<uint8_t>(input);
+        Serial.write(input);
       } else {
-        Serial.println("FAIL: TX did not complete.");
+        // Discard the entire oversized line rather than sending truncated text.
+        messageOverflow = true;
       }
     }
   }

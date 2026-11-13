@@ -1,5 +1,17 @@
 # Change log
 
+## 2026-11-12 — Typed LoRa messages
+
+- Extend the standalone radio test to send a typed word or sentence on Enter,
+  with a 255-byte limit, input echo and backspace editing. Accept CR, LF and
+  CRLF, ignore empty lines and reject oversized lines in full without sending.
+  The numbered `t`/`T` shortcut now also requires Enter.
+- Update radio usage instructions and the operational handoff. Existing sensor
+  firmware, radio settings and ESP-NOW packet contract remain unchanged.
+- Verification: `pio run -e lora_test` passed; Git whitespace and ignored-data
+  checks passed. No firmware was uploaded by the agent. Typed-message reception,
+  input editing and overflow handling still require hardware verification.
+
 ## 2026-11-12 — Standalone RFM96W radio test
 
 - Add an isolated `lora_test` PlatformIO environment and firmware for testing

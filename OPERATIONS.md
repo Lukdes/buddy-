@@ -9,7 +9,9 @@ working; this document is a handoff snapshot, not a substitute for inspection.
 - Standalone `src/lora_test.cpp` / `lora_test` environment checks the RFM96W
   at 433 MHz with HUZZAH32 labeled SPI pins (MOSI18/MISO19/SCK5),
   RST27, CS33 and G0 on GPIO12. It listens
-  and sends one packet per serial `t` command. See `tools/LORA_TEST.md`.
+  and sends typed serial messages on Enter (maximum 255 bytes); `t` + Enter
+  sends a numbered test packet. Oversized lines are rejected without transmission.
+  See `tools/LORA_TEST.md`.
   PlatformIO build passed; no upload or hardware test was performed. SPI
   initialization does not verify the RF link or G0 wiring. Existing firmware
   entry points, packet contract, and default build environment are unchanged.

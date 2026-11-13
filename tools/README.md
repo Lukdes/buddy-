@@ -238,4 +238,5 @@ gets pyserial from `pyproject.toml`. Run the transport/persistence tests with
 ## Standalone radio test
 
 See [LORA_TEST.md](LORA_TEST.md) for the isolated RFM96W LoRa test,
-current wiring, build/upload commands, and interpreting serial output.
+current wiring, build/upload commands, sending typed messages with Enter, and
+interpreting serial output.
