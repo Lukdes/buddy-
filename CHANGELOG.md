@@ -1,5 +1,21 @@
 # Change log
 
+## 2026-11-12 — Standalone RFM96W radio test
+
+- Add an isolated `lora_test` PlatformIO environment and firmware for testing
+  two 433 MHz RFM96W radios without changing the sensor sender, receiver,
+  heartrate entry points, ESP-NOW packet contract, or default environment.
+- Match the HUZZAH32 Feather's labeled SPI pins: MOSI18, MISO19 and SCK5,
+  with RST27, CS33 and G0 on GPIO12. Listen for packets and transmit one
+  numbered message per serial `t` command at 115200 baud.
+- Pin LoRa library version 0.8.0 and document wiring, building, uploading,
+  two-board testing, antenna use, GPIO12 boot considerations and GPIO27 conflict
+  with the separate vibration module. Update the operational handoff.
+- Verification: `pio run -e lora_test` passed using the Feather configuration;
+  Git whitespace and ignore checks passed. Data, build artifacts and local
+  configuration remain excluded. No agent upload or hardware test was performed;
+  initialization, RF reception and G0 wiring still need hardware verification.
+
 ## 2026-11-04 — Receiver-only observer vibration
 
 - Move the vibration controller from sender to receiver so the observer receives

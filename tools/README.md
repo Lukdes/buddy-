@@ -234,3 +234,8 @@ gets pyserial from `pyproject.toml`. Run the transport/persistence tests with
 ```sh
 ~/.platformio/penv/bin/python -m unittest discover -s test -p 'test_*.py' -v
 ```
+
+## Standalone radio test
+
+See [LORA_TEST.md](LORA_TEST.md) for the isolated RFM96W LoRa test,
+current wiring, build/upload commands, and interpreting serial output.

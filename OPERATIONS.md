@@ -1,10 +1,18 @@
 # Operations and agent handoff
 
-Last updated: 2026-11-04. Read `AGENTS.md` for project rules and
+Last updated: 2026-11-12. Read `AGENTS.md` for project rules and
 `tools/README.md` for full commands. Check live Git status and remotes before
 working; this document is a handoff snapshot, not a substitute for inspection.
 
 ## Current baseline
+
+- Standalone `src/lora_test.cpp` / `lora_test` environment checks the RFM96W
+  at 433 MHz with HUZZAH32 labeled SPI pins (MOSI18/MISO19/SCK5),
+  RST27, CS33 and G0 on GPIO12. It listens
+  and sends one packet per serial `t` command. See `tools/LORA_TEST.md`.
+  PlatformIO build passed; no upload or hardware test was performed. SPI
+  initialization does not verify the RF link or G0 wiring. Existing firmware
+  entry points, packet contract, and default build environment are unchanged.
 
 - Vibration control now runs only on the observer receiver. Move the module IN
   to receiver GPIO27, VCC to the supported receiver supply, and GND to common
