@@ -12,8 +12,8 @@ working; this document is a handoff snapshot, not a substitute for inspection.
   and sends typed serial messages on Enter (maximum 255 bytes); `t` + Enter
   sends a numbered test packet. Oversized lines are rejected without transmission.
   See `tools/LORA_TEST.md`.
-  PlatformIO build passed; no upload or hardware test was performed. SPI
-  initialization does not verify the RF link or G0 wiring. Existing firmware
+  PlatformIO build and upload passed; the 2026-11-17 startup check failed radio
+  initialization. RF communication and G0 wiring remain unverified. Existing firmware
   entry points, packet contract, and default build environment are unchanged.
 
 - Vibration control now runs only on the observer receiver. Move the module IN
@@ -45,6 +45,15 @@ working; this document is a handoff snapshot, not a substitute for inspection.
 - No firmware source change was made. A brief serial check returned no output;
   sensor acquisition and wireless packet delivery remain unverified. With the
   optical sensor absent, this firmware stops during sensor initialization.
+
+## LoRa upload on 2026-11-17
+
+- Uploaded the existing `lora_test` firmware to the replacement ESP32 and verified
+  flash success. This board now runs the standalone radio test.
+- After reset, startup printed `FAIL: radio initialization. Check power, ground,
+  SPI and reset wiring.` The radio did not initialize over SPI; RF transmission
+  and reception remain unverified. No test message was transmitted.
+- Check powered-off wiring against `tools/LORA_TEST.md` before retrying.
 
 ## Board identification and upload workflow
 
@@ -120,7 +129,7 @@ Local `main` now includes Luke's `origin/main` through `4266ee7` (standalone
 LoRa tests) and the pending continuous receiver alarm changes. `origin` points
 to Luke's repository and `fork` to the personal fork. Local `main` still tracks
 `fork/main`; check the intended destination before any future authorized push.
-No push was performed during this integration. `data-logging` remains at
+This integration targets Luke's main for the authorized push. `data-logging` remains at
 `169009c`. Local recordings and machine configuration remain ignored.
 
 Recordings live under ignored `data/raw_records/`. Local troubleshooting notes

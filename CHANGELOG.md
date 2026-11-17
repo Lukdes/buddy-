@@ -1,6 +1,6 @@
 # Change log
 
-## 2026-11-17 — Local main integration and continuous receiver alarm
+## 2026-11-17 — Main integration, continuous receiver alarm, and LoRa bench result
 
 - Bring local main forward through Luke's main at 4266ee7, including the
   standalone RFM96W test and typed-message support. Preserve the pending receiver,
@@ -20,7 +20,11 @@
 - No hardware was flashed during Git integration. Earlier sender flash succeeded,
   but sensor acquisition and packet delivery were not verified. Receiver alarm
   transitions and the standalone LoRa RF link still require hardware testing.
-  This integration is committed locally; no push was performed.
+- Subsequent LoRa bench check: built and uploaded the existing lora_test firmware
+  to the replacement ESP32; the uploader verified the flash. After reset, serial
+  output reported radio initialization failure. No test message was transmitted.
+  Record this result in OPERATIONS.md; check power, ground, SPI, and reset wiring.
+  RF transmission/reception and G0 wiring remain unverified.
 
 ## 2026-11-12 — Typed LoRa messages
 
