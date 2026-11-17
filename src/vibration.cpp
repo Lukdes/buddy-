@@ -5,7 +5,7 @@
 namespace {
 constexpr uint8_t vibrationPin = 27;
 constexpr bool vibrationActiveHigh = true;
-constexpr float initialSpO2Threshold = 97.0f;
+constexpr float initialSpO2Threshold = 98.0f;
 constexpr uint32_t packetFreshMs = 2000;
 SpO2Alert oxygenAlert;
 bool motorOn = false;
@@ -30,7 +30,7 @@ void update(uint32_t now, float spo2, bool valid, uint32_t receivedAt) {
   if (on != motorOn) {
     driveMotor(on);
     Serial.printf("Vibration %s | SpO2 threshold <%.1f%%\n",
-        on ? "ON (maximum 5 seconds)" : "OFF", oxygenAlert.threshold());
+        on ? "ON (while below threshold)" : "OFF", oxygenAlert.threshold());
   }
 }
 

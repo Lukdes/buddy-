@@ -136,23 +136,19 @@ All recordings are in the ignored `data/` folder. Keep a separate backup. In
 view-only mode no recording folder or files are created. You may use PlatformIO's
 ordinary monitor instead whenever recording is unnecessary.
 
-## Five-second vibration alert (receiver only)
+## Continuous receiver alarm
 
-The receiver uses a nonblocking five-second pulse for a fresh, valid SpO2
-estimate **strictly below 97%**. Exactly 97% does not trigger it. A continuous low
-reading produces only one pulse, not repeated vibration. After the pulse ends,
-a valid reading at or above the threshold re-arms the alert for another low
-episode. Recovery during a pulse does not shorten the five seconds. Invalid,
-stale (no accepted packet for more than two seconds), or lost-contact data stops
-the pulse early and does not re-arm it. These conditions are not interpreted as
-zero oxygen or as recovery. A restart resets the alert state.
+The receiver keeps GPIO27 HIGH while fresh, valid SpO2 is **strictly below 98%**.
+At or above 98% turns it OFF. There is no pulse timeout, cooldown, or re-arm latch.
+Invalid data, lost contact, or no accepted packet for more than two seconds turns
+it OFF. When valid low readings return it turns ON again immediately.
 
 `src/vibration.cpp` receives the latest wireless SpO2, validity/contact state,
 and callback arrival timestamp from the receiver loop. It runs inside receiver
-firmware and continues timing even when packets stop. Packet age is not sensor
+firmware and checks freshness even when packets stop. Packet age is not sensor
 acquisition age: the existing packet has no acquisition timestamp. The five-second
 connection-loss serial warning remains; no separate loss-of-link vibration pattern
-is implemented. Loss of packets cancels the oxygen pulse after two seconds.
+is implemented. Loss of packets turns the oxygen alarm off after two seconds.
 Upload with `make upload-receiver PORT=<receiver-port>`.
 
 In `src/vibration.cpp`, `initialSpO2Threshold` controls the default threshold,
@@ -167,19 +163,21 @@ For later on-device algorithm integration, call
 `vibration::setThreshold(percent)` from the receiver loop context (include
 `Vibration.h`). It rejects
 nonfinite values and values outside (0, 100], leaving the previous setting intact.
-It changes the trigger/recovery threshold without forcing a new pulse or clearing
-the consumed-alert state. A host-to-device command protocol is not implemented.
-The reusable policy lives in `include/SpO2Alert.h`; pulse duration is `pulseMs`.
+The threshold takes effect on the next loop update. A host-to-device command
+protocol is not implemented. The policy lives in `include/SpO2Alert.h`. Its standalone default is 100%;
+receiver initialization overrides it with `initialSpO2Threshold` (98%).
 
-Receiver USB output records the motor state and threshold. The wireless packet
-format and underlying sensor estimation are unchanged. Sender GPIO27 stays LOW.
+Receiver USB output records the motor state and threshold.
+SpO2 display uses nine significant digits to avoid rounding a below-threshold
+value such as 99.9 to 100. Startup identifies this diagnostic as continuous-v2.
+The wireless packet format and underlying sensor estimation are unchanged. Sender GPIO27 stays LOW.
 
 Run `make test-alert` with a host C++ compiler installed to test synthetic readings
 and timing without touching hardware. If macOS reports an SDK/linker architecture
 mismatch, select an installed SDK compatible with the compiler through `SDKROOT`
 for that command; this is a host-toolchain issue, not a firmware upload failure.
 Tests include threshold boundaries, sustained
-low readings, recovery/re-triggering, invalid inputs, threshold changes, and
+low readings, recovery/contact return, invalid inputs, threshold changes, and
 millisecond timer rollover. Do not induce desaturation to test an alert. Physical
 motor ON/OFF operation passed; precise physical timing, startup behavior under
 different power conditions, and vibration interference with optical sensing need
@@ -187,7 +185,7 @@ further verification. This is an experimental alert, not a validated
 safety alarm. Upload the receiver using the explicit port workflow above.
 
 For a standalone motor bench test, the `vibration_test` environment uses labelled
-synthetic 96% input, waits ten seconds after boot, and requests one five-second
+synthetic 96% input, waits ten seconds after boot, and supplies valid input for five seconds before invalidating it to end the
 pulse on GPIO 27. It reads no sensor and sends no radio packets. Each reset
 (including one caused by opening a monitor) starts a new test. It replaces the
 receiver firmware until normal receiver firmware is uploaded again:

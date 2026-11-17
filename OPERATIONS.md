@@ -1,6 +1,6 @@
 # Operations and agent handoff
 
-Last updated: 2026-11-12. Read `AGENTS.md` for project rules and
+Last updated: 2026-11-17. Read `AGENTS.md` for project rules and
 `tools/README.md` for full commands. Check live Git status and remotes before
 working; this document is a handoff snapshot, not a substitute for inspection.
 
@@ -19,9 +19,11 @@ working; this document is a handoff snapshot, not a substitute for inspection.
 - Vibration control now runs only on the observer receiver. Move the module IN
   to receiver GPIO27, VCC to the supported receiver supply, and GND to common
   receiver ground while powered off. Upload both firmwares to remove the old
-  sender behavior and enable receiver alerts. Neither has been flashed for this change.
-- The unchanged policy triggers one five-second pulse for valid SpO2 below 97%,
-  with valid recovery needed to re-arm. Invalid/no-contact input cancels it.
+  sender behavior and enable receiver alerts. Sender upload succeeded on a replacement
+  board on 2026-11-17; receiver alert behavior still needs hardware verification.
+- The receiver default threshold is now 98% for testing: valid SpO2 below 98%
+  keeps the alarm ON continuously. At or above 98% turns it OFF. No re-arm or
+  cooldown is required. Invalid/no-contact input turns it OFF.
   Receiver packet age over two seconds cancels output; packet arrival time is not
   sensor acquisition time. The five-second link-loss message remains serial-only.
 - Previous motor bench testing was on the sender setup. Receiver motor wiring,
@@ -35,6 +37,14 @@ working; this document is a handoff snapshot, not a substitute for inspection.
   accuracy. Repeated reference comparisons remain outstanding.
 - No 20-second settling stage or additional smoothing has been implemented.
   The temporary I2C scanner was removed and is not part of this baseline.
+
+## Sender upload on 2026-11-17
+
+- Built and uploaded the existing sender firmware successfully to a replacement
+  USB-connected ESP32. The uploader verified the written flash and reset the board.
+- No firmware source change was made. A brief serial check returned no output;
+  sensor acquisition and wireless packet delivery remain unverified. With the
+  optical sensor absent, this firmware stops during sensor initialization.
 
 ## Board identification and upload workflow
 
@@ -66,6 +76,15 @@ when present and falls back to PATH. View/record commands do not flash firmware.
 
 ## Verification and limitations
 
+- Local main integration (2026-11-17): all seven recorder tests and synthetic
+  alarm policy tests passed. All five PlatformIO environments built successfully.
+  The existing MAX3010x I2C_BUFFER_LENGTH warning remains. No hardware was flashed
+  during integration; receiver alarm and LoRa RF validation remain pending.
+- Continuous-alarm update (2026-11-05): receiver and vibration_test builds and
+  updated host policy tests passed. Tests cover sustained low output beyond five
+  seconds, contact return without re-arming, recovery, and invalid inputs. The
+  standalone bench test explicitly invalidates its input after five seconds so
+  it remains bounded. No upload or hardware validation of this update was done.
 - Receiver-only move: sender and receiver builds passed; host policy tests passed
   with a compatible SDK. Existing library I2C_BUFFER_LENGTH warning remains.
   No upload was performed; receiver-side motor and dropout tests remain pending.
@@ -97,14 +116,12 @@ when present and falls back to PATH. View/record commands do not flash firmware.
 
 ## Repository and local data
 
-At this handoff, `origin` points to `Lukdes/buddy-`, and `data-logging` tracks
-`origin/data-logging`. A separate `fork` remote points to the personal fork.
-The receiver-only change targets Luke's `main` by explicit user request; local
-`data-logging` remains the working branch. Main already merged the earlier work
-through PR #2. Updating main does not flash either board: move the motor to the
-receiver and upload both updated firmwares before hardware validation.
-Confirm `git remote -v` and `git status -sb` before any authorized push; do not
-assume the remote names from older change-log entries remain current.
+Local `main` now includes Luke's `origin/main` through `4266ee7` (standalone
+LoRa tests) and the pending continuous receiver alarm changes. `origin` points
+to Luke's repository and `fork` to the personal fork. Local `main` still tracks
+`fork/main`; check the intended destination before any future authorized push.
+No push was performed during this integration. `data-logging` remains at
+`169009c`. Local recordings and machine configuration remain ignored.
 
 Recordings live under ignored `data/raw_records/`. Local troubleshooting notes
 live under ignored `data/knowledge_base/`; they may be absent on another computer.

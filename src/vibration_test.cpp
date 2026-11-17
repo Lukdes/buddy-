@@ -19,7 +19,7 @@ void loop() {
   if (finished) return;
   uint32_t elapsed = millis() - testStarted;
   if (elapsed < 10000) return; // Allow the operator to attach a monitor.
-  bool on = testAlert.update(millis(), true, 96.0f);
+  bool on = testAlert.update(millis(), elapsed < 15000, 96.0f);
   if (on != wasOn) {
     digitalWrite(vibrationPin, on ? HIGH : LOW);
     Serial.println(on

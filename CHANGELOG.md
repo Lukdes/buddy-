@@ -1,5 +1,27 @@
 # Change log
 
+## 2026-11-17 — Local main integration and continuous receiver alarm
+
+- Bring local main forward through Luke's main at 4266ee7, including the
+  standalone RFM96W test and typed-message support. Preserve the pending receiver,
+  bench-test, and documentation changes while resolving the handoff date conflict.
+- Keep receiver vibration active while fresh valid SpO2 is below 98%; cancel on
+  recovery, invalid/no-contact input, or packets older than two seconds. Remove
+  the pulse latch and re-arm requirement. The reusable policy defaults to 100%;
+  receiver initialization explicitly sets 98%. Keep the standalone synthetic
+  bench test bounded to five seconds.
+- Print receiver SpO2 with nine significant digits and identify continuous-v2
+  at startup. Update usage and handoff documentation and record the successful
+  existing-sender upload to a replacement board.
+- Verification: all seven recorder tests and synthetic alarm policy tests passed.
+  PlatformIO builds passed for sender, receiver, vibration_test, heartrate, and
+  lora_test. The existing MAX3010x I2C_BUFFER_LENGTH warning remains. Whitespace
+  and ignore checks passed; data and machine configuration remain excluded.
+- No hardware was flashed during Git integration. Earlier sender flash succeeded,
+  but sensor acquisition and packet delivery were not verified. Receiver alarm
+  transitions and the standalone LoRa RF link still require hardware testing.
+  This integration is committed locally; no push was performed.
+
 ## 2026-11-12 — Typed LoRa messages
 
 - Extend the standalone radio test to send a typed word or sentence on Enter,

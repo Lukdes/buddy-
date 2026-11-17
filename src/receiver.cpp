@@ -43,6 +43,7 @@ void setup() {
     while (true) delay(1000);
   }
   Serial.println("Receiver ready. Waiting for heart-rate sender...");
+  Serial.println("Alarm mode: continuous-v2; OFF at or above threshold; SpO2 shown with 9 significant digits.");
 }
 
 void loop() {
@@ -59,7 +60,7 @@ void loop() {
     if (packet.status == 0) Serial.print("No finger on sensor");
     else if (packet.status == 1) Serial.print("BPM calculating/unavailable");
     else Serial.printf("Estimated BPM=%.1f", packet.bpm);
-    if (packet.spo2Valid) Serial.printf(" | Estimated SpO2=%.0f%%", packet.spo2);
+    if (packet.spo2Valid) Serial.printf(" | Estimated SpO2=%.9g%%", packet.spo2);
     else Serial.print(" | SpO2 calculating/unavailable");
     Serial.printf(" | Vibration=%s | Alert below=%.1f%%\n",
         vibration::isActive() ? "ON" : "OFF", vibration::threshold());

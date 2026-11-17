@@ -26,8 +26,8 @@ help:
 	  'make upload-receiver PORT=...     Enable observer vibration by uploading receiver firmware' \
 	  '' \
 	  'Vibration: wire the motor to the observer receiver GPIO27, then upload-receiver.' \
-	  'After a successful upload, valid SpO2 below the configured threshold (default 97%)' \
-	  'triggers one five-second pulse. Recovery re-arms it; invalid/stale data stops it early.' \
+	  'After a successful upload, valid SpO2 below the configured threshold (default 98%)' \
+	  'keeps the alarm ON. At/above threshold or invalid/stale data turns it OFF.' \
 	  'It runs on the board even when make view is closed. No separate enable command is needed.' \
 	  'make test-alert only simulates the logic; it does not activate the physical motor.' \
 	  '' \
