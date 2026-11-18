@@ -8,7 +8,7 @@ working; this document is a handoff snapshot, not a substitute for inspection.
 
 - Standalone `src/lora_test.cpp` / `lora_test` environment checks the RFM96W
   at 433 MHz with HUZZAH32 labeled SPI pins (MOSI18/MISO19/SCK5),
-  RST27, CS33 and G0 on GPIO12. It listens
+  RST27, CS33 and G0 on GPIO15 (corrected to match the CAD reference). It listens
   and sends typed serial messages on Enter (maximum 255 bytes); `t` + Enter
   sends a numbered test packet. Oversized lines are rejected without transmission.
   See `tools/LORA_TEST.md`.
@@ -54,6 +54,15 @@ working; this document is a handoff snapshot, not a substitute for inspection.
   SPI and reset wiring.` The radio did not initialize over SPI; RF transmission
   and reception remain unverified. No test message was transmitted.
 - Check powered-off wiring against `tools/LORA_TEST.md` before retrying.
+
+## CAD pin correction on 2026-11-17
+
+- Corrected standalone lora_test G0/DIO0 from GPIO12 to GPIO15 and updated its
+  startup pin listing and wiring guide to match the CAD reference.
+- PlatformIO lora_test build passed after correction; Git whitespace checks passed.
+- The corrected GPIO15 firmware uploaded successfully to the replacement ESP32,
+  with flash verification. Startup confirmed G0=15 but still reported radio
+  initialization failure. No test message was transmitted; RF remains unverified.
 
 ## Board identification and upload workflow
 

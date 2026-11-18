@@ -16,12 +16,12 @@ Power off before wiring. Use these GPIO numbers, not physical pin positions:
 | MOSI | MOSI / GPIO18 |
 | MISO | MISO / GPIO19 |
 | SCK | SCK / GPIO5 |
-| G0 / DIO0 | GPIO12 |
+| G0 / DIO0 | GPIO15 |
 
 Leave EN and G1–G5 disconnected. Attach a 433 MHz antenna before transmitting.
-GPIO12 is a boot strapping pin: if the ESP32 fails to boot with the radio
-attached, power off and disconnect G0 to troubleshoot. This test polls the
-radio over SPI, so success does not verify the G0 connection.
+G0/DIO0 uses GPIO15 to match the CAD reference. This test polls the radio
+over SPI, so successful initialization does not verify the G0 connection.
+If external wiring prevents boot, disconnect power before isolating connections.
 Disconnect any vibration module from GPIO27 before using that pin for radio reset.
 
 Build without uploading:

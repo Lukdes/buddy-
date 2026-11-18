@@ -1,5 +1,16 @@
 # Change log
 
+## 2026-11-17 — Match standalone LoRa DIO0 to CAD
+
+- Change lora_test G0/DIO0 from GPIO12 to GPIO15 to match the supplied CAD
+  reference. Update the startup pin listing, wiring guide, and operational handoff.
+- Verification: lora_test built successfully; upload to the replacement ESP32
+  passed flash verification. Serial startup confirmed G0=15, then still reported
+  radio initialization failure. No test message was transmitted. Git whitespace
+  and ignore checks passed; local data and configuration remain excluded.
+- The pin correction does not establish working SPI or RF communication.
+  Radio initialization, G0 wiring, and over-the-air delivery remain unverified.
+
 ## 2026-11-17 — Main integration, continuous receiver alarm, and LoRa bench result
 
 - Bring local main forward through Luke's main at 4266ee7, including the

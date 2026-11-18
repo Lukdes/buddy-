@@ -8,7 +8,7 @@ constexpr int radioCs = 33;
 constexpr int radioMosi = 18;
 constexpr int radioMiso = 19;
 constexpr int radioSck = 5;
-constexpr int radioDio0 = 12;
+constexpr int radioDio0 = 15; // G0 wiring in the CAD reference.
 uint32_t packetNumber = 0;
 uint8_t message[255];
 size_t messageLength = 0;
@@ -39,7 +39,7 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
   Serial.println("RFM96W standalone test: 433 MHz");
-  Serial.println("RST=27 CS=33 MOSI=18 MISO=19 SCK=5 G0=12");
+  Serial.println("RST=27 CS=33 MOSI=18 MISO=19 SCK=5 G0=15");
   SPI.begin(radioSck, radioMiso, radioMosi, radioCs);
   LoRa.setPins(radioCs, radioReset, radioDio0);
   if (!LoRa.begin(433E6)) {
